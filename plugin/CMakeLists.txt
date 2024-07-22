@@ -5,7 +5,7 @@ project(AudioPlugin VERSION 0.1.0)
 
 # Adding a directory with the library/application name as a subfolder of the
 # include folder is a good practice. It helps avoid name clashes later on.
-set(INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src/mpesynth")
+set(INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
 
 IF (${CMAKE_BUILD_TYPE} STREQUAL "Debug")
     set(PROD_NAME "mpesynth-Debug")
@@ -36,6 +36,7 @@ target_sources(${PROJECT_NAME}
         src/Parameter/ModulationData.cpp
         src/Parameter/Parameters.cpp
         src/Synthesizer/ADSR.cpp
+        src/Synthesizer/Synthesizer.cpp
         src/Synthesizer/Voice.cpp
         src/PluginProcessor.cpp
 )
