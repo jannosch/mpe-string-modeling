@@ -161,7 +161,7 @@ Eigen::ArrayX<Decimal> Voice::generateNextBlock() {
         currentPhase0To1 += phaseIncrements(i);
     }
 
-    return (juce::MathConstants<Decimal>::twoPi * (phases0To1 + sharedData.parameters->timbre->getModulated(modulationData) * (juce::MathConstants<Decimal>::twoPi * phases0To1).sin())).sin() * envelope1.toGainFactor(modulationData.atSource(ModulationData::Sources::ENVELOPE1));
+    return (juce::MathConstants<Decimal>::twoPi * (phases0To1 + sharedData.parameters->timbre->getModulated(modulationData) * (juce::MathConstants<Decimal>::twoPi * phases0To1).sin())).sin() * envelope1.toGainFactor(modulationData.atSource(ModulationData::Sources::ENVELOPE1)) * envelope1.toGainFactor(sharedData.parameters->volume->getModulated(modulationData));
 }
 
 

@@ -13,6 +13,11 @@ public:
             juce::NormalisableRange<float>(0, 1, 0, 1.f, false),
             0);
 
+    ModulatedParameterFloat* volume = add<ModulatedParameterFloat>(
+            "Volume",
+            juce::NormalisableRange<float>(0, 1, 0, 1.f, false),
+            0.8f);
+
     ModulatedParameterFloat* envelope1Attack = add<ModulatedParameterFloat>(
             "Envelope 1 attack seconds",
             juce::NormalisableRange<float>(0.001f, 8, 0, .35f, false),

@@ -2,7 +2,6 @@
 #define QSYNTHI2_MODULATIONDATA_H
 
 #include "../Types.h"
-#include "ValueProvider.h"
 
 
 class ModulationData : public List<Eigen::ArrayX<Decimal>> {
