@@ -36,13 +36,13 @@ public:
             0.100f);
 
 
-    ModulatedParameterFloat* baseFrequency = add<ModulatedParameterFloat>(
+    ModulatedParameterFloat* frequency = add<ModulatedParameterFloat>(
             "Frequency",
             ExponentialRange(2.5, 2560),
             110);
 
     // Add modulation slots
     ParameterCollection() {
-        addModulationSlots(12, baseFrequency->getParameterID());
+        addModulationSlots(12, frequency->getParameterID());
     }
 };
