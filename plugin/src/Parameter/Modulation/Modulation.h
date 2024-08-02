@@ -1,8 +1,8 @@
 #pragma once
-
-#include "ModulationData.h"
+#include "../../Types.h"
 
 class ModulatedParameterFloat;
+class ModulationData;
 
 class Modulation {
 public:
@@ -11,9 +11,7 @@ public:
 
     Modulation(size_t newModulationSourceId, ModulatedParameterFloat* newAmount);
 
-    Eigen::ArrayX<Decimal> getModulatedNormalized(const ModulationData& modulationData);
-
-    Decimal getSingleModulatedNormalized(const ModulationData& modulationData);
+    Eigen::ArrayX<Decimal> getModulatedNormalized(const ModulationData* modulationData, int startSample, int numSamples);
 
     void setModulatedParameterId(juce::String newModulatedParameterId);
 

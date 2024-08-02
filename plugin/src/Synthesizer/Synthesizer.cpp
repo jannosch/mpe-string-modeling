@@ -33,13 +33,3 @@ List<Voice *> Synthesizer::getActiveVoices() {
 
     return activeVoices;
 }
-
-
-
-Eigen::ArrayX<Decimal> Synthesizer::generateNextBlock() {
-    auto samples = Eigen::ArrayX<Decimal>(samplesPerBlock).setZero();
-
-    getActiveVoices().forEach([&](Voice* v){ samples += v->generateNextBlock(); });
-
-    return samples;
-}

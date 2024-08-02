@@ -1,12 +1,8 @@
-
 #include <utility>
-
 #include "Modulation.h"
 #include "ModulatedParameterFloat.h"
-#include "../Data.h"
+#include "ModulationData.h"
 
-
-extern Data sharedData;
 
 
 
@@ -24,17 +20,8 @@ Modulation::Modulation(size_t modulationSourceId, ModulatedParameterFloat* amoun
 
 
 
-Eigen::ArrayX<Decimal> Modulation::getModulatedNormalized(const ModulationData& modulationData) {
-    jassert(0 <= modulationSourceId && modulationSourceId < modulationData.size()); // Invalid modulationSource. Isn't set in modulationData!
-    return modulationData[modulationSourceId] * amount->getModulated(modulationData);
-}
-
-
-
-Decimal Modulation::getSingleModulatedNormalized(const ModulationData &modulationData) {
-    jassert(modulationData.size() > modulationSourceId); // Invalid modulationSource. Isn't set in modulationData!
-
-    return modulationData[modulationSourceId](Eigen::last) * amount->getSingleModulated(modulationData);
+Eigen::ArrayX<Decimal> Modulation::getModulatedNormalized(const ModulationData* modulationData, int startSample, int numSamples) {
+    return modulationData->getById(modulationSourceId, startSample, numSamples) * amount->getModulated(modulationData, startSample, numSamples);
 }
 
 

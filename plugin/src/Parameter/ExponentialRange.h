@@ -1,6 +1,7 @@
 #ifndef QSYNTHI2_EXPONENTIALRANGE_H
 #define QSYNTHI2_EXPONENTIALRANGE_H
 
+#include "../Juce.h"
 
 class ExponentialRange : public juce::NormalisableRange<float> {
 

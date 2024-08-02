@@ -1,8 +1,10 @@
 #pragma once
-#include "../Parameter/ModulatedParameterFloat.h"
+#include "ModulationSourceValue.h"
+
+class ModulatedParameterFloat;
 
 
-class ADSR {
+class ADSR : public ModulationSourceValue {
 public:
 
     enum State {
@@ -16,9 +18,9 @@ public:
                        ModulatedParameterFloat *sustainLevelParameter,
                        ModulatedParameterFloat *releaseTimeParameter);
 
-    void prepareToPlay(Decimal newSampleRate, Eigen::Index samplesPerBlock);
+    void prepareToPlay(Decimal newSampleRate, Eigen::Index samplesPerBlock) override;
 
-    void processBlock(Eigen::ArrayX<Decimal> *buffer, const ModulationData &modulationData, int startSample, int numSamples);
+    void processBlock(const ModulationData* modulationData, int startSample, int numSamples) override;
 
     void reset();
 

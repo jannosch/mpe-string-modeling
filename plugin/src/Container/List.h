@@ -27,10 +27,6 @@ public:
         return *this;
     }
 
-    static List list2D(size_t size0, size_t size1, T initialValue) {
-        return List(size0, List(size1, initialValue));
-    }
-
     size_t append(const T& element) {
         this->push_back(element);
         return this->size() - 1;
@@ -62,6 +58,20 @@ public:
         return res;
     }
 
+    bool all(const std::function<bool(T)> condition) {
+        for (T& element : this) {
+            if (!condition(element)) return false;
+        }
+        return true;
+    }
+
+    bool any(const std::function<bool(T)> condition) {
+        for (T& element : this) {
+            if (condition(element)) return true;
+        }
+        return false;
+    }
+
     template<class U>
     List<U> map(std::function<U(T)> mapper) const {
         List<U> copiedList(this->size());
@@ -79,15 +89,10 @@ public:
         }
     }
 
+    // Returns size if element isn't contained
     size_t indexOf(const T &element) {
         auto iterator = find(this->begin(), this->end(), element);
-
-        // If element was found
-        if (iterator != this->end()) {
-            return static_cast<size_t>(iterator - this->begin());
-        }
-
-        return static_cast<size_t>(-1);
+        return static_cast<size_t>(iterator - this->begin());
     }
 
     void forEach(std::function<void(T)> consumer) {
@@ -100,22 +105,6 @@ public:
         for (size_t i = 0; i < this->size(); ++i) {
             consumer(i, this->at(i));
         }
-    }
-
-    static double sumOf(const List<double>& list) {
-        double sum = 0;
-        for (const double x : list) {
-            sum += x;
-        }
-        return sum;
-    }
-
-    static float sumOf(const List<float>& list) {
-        float sum = 0;
-        for (const float x : list) {
-            sum += x;
-        }
-        return sum;
     }
 
 
@@ -141,8 +130,3 @@ public:
     }
 
 };
-
-template <typename T>
-List<List<T>> list2D(size_t s0, size_t s1, T initialValue) {
-    return List(s0, List(s1, initialValue));
-}

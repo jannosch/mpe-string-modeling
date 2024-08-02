@@ -1,5 +1,5 @@
 #include "PluginProcessor.h"
-#include "Parameter/ModulatedParameterFloat.h"
+#include "Parameter/Modulation/ModulatedParameterFloat.h"
 #include <iostream>
 
 #include "Data.h"

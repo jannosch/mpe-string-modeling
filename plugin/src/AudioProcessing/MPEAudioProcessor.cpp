@@ -27,13 +27,4 @@ void MPEAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, const juc
     // Process MIDI
     synth.renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
 
-    // Process Audio
-    auto samples = synth.generateNextBlock();
-
-    for (int channel = 0; channel < buffer.getNumChannels(); channel++) {
-        for (int i = 0; i < buffer.getNumSamples(); i++) {
-            buffer.addSample(channel, i, static_cast<float>(samples[i]));
-        }
-    }
-
 }

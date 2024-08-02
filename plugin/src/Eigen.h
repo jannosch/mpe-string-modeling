@@ -13,11 +13,10 @@
 
 namespace Eigen {
 
-
     [[nodiscard]] static juce::String toString(const Eigen::ArrayXX<double>& array) {
         std::ostringstream oss;
         oss << array;
-        return juce::String(oss.str());
+        return oss.str();
     }
 
     [[nodiscard]] static juce::String shapeAsString(const Eigen::ArrayXX<double>& array, const juce::String &name = "") {

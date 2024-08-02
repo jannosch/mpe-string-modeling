@@ -1,6 +1,9 @@
 #pragma once
-#include "../Juce.h"
-#include "ModulatedParameterFloat.h"
+#include "../Types.h"
+#include "../Parameter/Modulation/Modulation.h"
+#include "../Parameter/Modulation/ModulatedParameterFloat.h"
+
+
 
 class Parameters {
 
@@ -35,6 +38,7 @@ public:
     void connectTo(juce::AudioProcessor &processorToConnectTo);
 
     // Call this to make new Parameters
+    // Must be defined in .h otherwise there will be linker issues
     template<typename T, typename... Args>
     T *add(Args &&... args) {
         jassert(layoutInCreation); // Call this only before calling connectTo()!
@@ -52,8 +56,9 @@ public:
         return &reference; // Return pointer to parameter
     }
 
+
     // Call this to add modulation slots for all before created parameters
-    List<std::shared_ptr<Modulation>> &addModulationSlots(size_t number, const juce::String& frequencyParameterID);
+    List<std::shared_ptr<Modulation>> &addModulationSlots(size_t number, ModulatedParameterFloat* frequencyParameter);
 
     // Call this in "getStateInformation(...)". Gives DAW Plugin data to store.
     void getStateInformation(juce::MemoryBlock& destData);

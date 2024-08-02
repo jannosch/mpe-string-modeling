@@ -1,5 +1,8 @@
 #include "Parameters.h"
 #include "LambdaListener.h"
+#include "Modulation/ModulationData.h"
+
+
 
 
 Parameters::Parameters() = default;
@@ -20,7 +23,7 @@ void Parameters::connectTo(juce::AudioProcessor &processorToConnectTo) {
 
 
 
-List<std::shared_ptr<Modulation>> &Parameters::addModulationSlots(size_t number, const juce::String& frequencyParameterID) {
+List<std::shared_ptr<Modulation>> &Parameters::addModulationSlots(size_t number, ModulatedParameterFloat* frequencyParameter) {
     jassert(layoutInCreation); // Call this before calling connectTo()
     jassert(number > 0); // number must be greater 0
     jassert(modulations.empty()); // Call this method only once, or change implementation to support multiple calls
@@ -28,6 +31,8 @@ List<std::shared_ptr<Modulation>> &Parameters::addModulationSlots(size_t number,
     const juce::String modulationTargetName = "Modulation Target";
     const juce::String modulationSourceName = "Modulation Source";
     const juce::String modulationAmountName = "Modulation Amount";
+
+    const juce::String frequencyParameterID = frequencyParameter->getParameterID();
 
     // Get a List of all existing modulatable parameters for possible modulation targets
     List<juce::String> modulationTargetIds = {"None"};

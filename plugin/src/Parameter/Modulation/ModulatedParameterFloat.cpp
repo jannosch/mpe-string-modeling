@@ -1,9 +1,6 @@
 #include "ModulatedParameterFloat.h"
-#include "Parameters.h"
-#include "../Data.h"
-#include "../Juce.h"
-
-extern Data sharedData;
+#include "../Parameters.h"
+#include "ModulationData.h"
 
 
 ModulatedParameterFloat::ModulatedParameterFloat() :
@@ -30,7 +27,7 @@ void ModulatedParameterFloat::processBlock() {
     }
 
     // Writes the raw value in the Buffer
-    for (double & i : bufferNormalizedSliderValue) {
+    for (Decimal & i : bufferNormalizedSliderValue) {
         i = smoothedNormalizedSliderValue.getNextValue();
     }
 }
@@ -39,19 +36,17 @@ void ModulatedParameterFloat::processBlock() {
 Eigen::ArrayX<Decimal> ModulatedParameterFloat::convertFrom0to1(const Eigen::ArrayX<Decimal> &values0to1) {
     return values0to1.unaryExpr([this](Decimal decimal) {
         return static_cast<Decimal>(juce::AudioParameterFloat::convertFrom0to1(static_cast<float>(decimal)));
-    });;
+    });
 }
 
 
 
-Eigen::ArrayX<Decimal> ModulatedParameterFloat::getModulatedNormalized(const ModulationData &modulationData) {
-    Eigen::ArrayX<Decimal> buffer = bufferNormalizedSliderValue;
+Eigen::ArrayX<Decimal> ModulatedParameterFloat::getModulatedNormalized(const ModulationData* modulationData, int startSample, int numSamples) {
+    Eigen::ArrayX<Decimal> buffer = bufferNormalizedSliderValue(Eigen::seqN(startSample, numSamples));
 
     for (const auto& modulation : modulations) {
-        auto modulationValues = modulation->getModulatedNormalized(modulationData);
-
-        jassert(buffer.size() == modulationValues.size());
-        buffer += modulationValues;
+        Eigen::ArrayX<Decimal> result = modulation->getModulatedNormalized(modulationData, startSample, numSamples);
+        buffer += result;
     }
 
     return buffer;
@@ -59,62 +54,27 @@ Eigen::ArrayX<Decimal> ModulatedParameterFloat::getModulatedNormalized(const Mod
 
 
 
-Decimal ModulatedParameterFloat::getSingleModulatedNormalized(const ModulationData &modulationData) {
-    Decimal buffer = bufferNormalizedSliderValue(Eigen::last);
-
-    for (const auto& modulation : modulations) {
-        buffer += modulation->getSingleModulatedNormalized(modulationData);
-    }
-
-    return buffer;
+Eigen::ArrayX<Decimal> ModulatedParameterFloat::getModulated(const ModulationData* modulationData, int startSample, int numSamples) {
+    return convertFrom0to1(getModulatedNormalized(modulationData, startSample, numSamples));
 }
 
 
 
-Eigen::ArrayX<Decimal> ModulatedParameterFloat::getModulated(const ModulationData &modulationData) {
-    return convertFrom0to1(getModulatedNormalized(modulationData));
-}
-
-
-
-Eigen::ArrayX<Decimal> ModulatedParameterFloat::getModulated(const List<ModulationData *> &modulationDataList) {
+Eigen::ArrayX<Decimal> ModulatedParameterFloat::getModulated(const List<ModulationData*>& modulationDataList, int startSample, int numSamples) {
     auto buffer = bufferNormalizedSliderValue;
 
     for (const auto& modulationData : modulationDataList) {
         for (const auto& modulation : modulations) {
-            auto modulationValues = modulation->getModulatedNormalized(*modulationData);
+            auto modulationValues = modulation->getModulatedNormalized(modulationData, startSample, numSamples);
 
             jassert(buffer.size() == modulationValues.size());
-            buffer += modulationValues * modulationData->atSource(ModulationData::Sources::ENVELOPE1);
+            buffer += modulationValues *
+                    modulationData->getBySource(ModulationData::Sources::ENVELOPE1, startSample, numSamples);
         }
     }
 
     return convertFrom0to1(buffer);
 }
-
-
-
-Decimal ModulatedParameterFloat::getSingleModulated(const ModulationData &modulationData) {
-    return static_cast<Decimal>(juce::AudioParameterFloat::convertFrom0to1(static_cast<float>(getSingleModulatedNormalized(modulationData))));
-}
-
-
-
-
-
-Decimal ModulatedParameterFloat::getSingleModulated(const List<ModulationData *> &modulationDataList) {
-    Decimal buffer = bufferNormalizedSliderValue(Eigen::last);
-
-    for (const auto& modulationData : modulationDataList) {
-        for (const auto &modulation: modulations) {
-            buffer += modulation->getSingleModulatedNormalized(*modulationData) * modulationData->atSource(ModulationData::Sources::ENVELOPE1)(Eigen::last);
-        }
-    }
-
-
-    return static_cast<Decimal>(juce::AudioParameterFloat::convertFrom0to1(static_cast<float>(buffer)));
-}
-
 
 
 

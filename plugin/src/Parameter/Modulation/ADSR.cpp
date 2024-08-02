@@ -1,5 +1,5 @@
 #include "ADSR.h"
-
+#include "ModulatedParameterFloat.h"
 
 ADSR::ADSR() = default;
 
@@ -7,57 +7,53 @@ void ADSR::prepareToPlay(Decimal newSampleRate, Eigen::Index samplesPerBlock) {
     jassert(newSampleRate > 0); // Invalid sample rate
     sampleRate = newSampleRate;
 
+    values = Eigen::ArrayX<Decimal>(samplesPerBlock);
     stateValues = List<Eigen::ArrayX<Decimal>>(4, Eigen::ArrayX<Decimal>(samplesPerBlock));
     stateValuesSet = List<bool>(4, false);
 
     reset();
 }
 
-void ADSR::processBlock(Eigen::ArrayX<Decimal> *buffer, const ModulationData &modulationData, int startSample, int numSamples) {
+void ADSR::processBlock(const ModulationData* modulationData, int startSample, int numSamples) {
     jassert(sampleRate > 0); // Call prepareToPlay before AudioProcessing
-    jassert(stateParameters.size() == 4);
+    jassert(stateParameters.size() == 4); // setParameters must be called before
 
     if (startSample == 0) {
         stateValuesSet = List<bool>(4, false);
     }
 
-    if (state != State::OFF && !stateValuesSet[state]) {
-        stateValues[state] = stateParameters[state]->getModulated(modulationData);
-        stateValuesSet[state] = true;
-    }
+    stateValues[State::ATTACK ] = stateParameters[State::ATTACK ]->getModulated(modulationData, startSample, numSamples);
+    stateValues[State::DECAY  ] = stateParameters[State::DECAY  ]->getModulated(modulationData, startSample, numSamples);
+    stateValues[State::SUSTAIN] = stateParameters[State::SUSTAIN]->getModulated(modulationData, startSample, numSamples);
+    stateValues[State::RELEASE] = stateParameters[State::RELEASE]->getModulated(modulationData, startSample, numSamples);
 
     switch (state) {
         case ATTACK:
             for (int i = startSample; i < startSample + numSamples; i++) {
-                currentValue += 1 / (sampleRate * stateValues[State::ATTACK](i)); // When attack should not be shorter on re-trigger, replace 1 with stateStart
-                buffer->operator()(i) = currentValue;
+                currentValue += 1 / (sampleRate * stateValues[State::ATTACK](i - startSample)); // When attack should not be shorter on re-trigger, replace 1 with stateStart
+                values(i) = currentValue;
 
                 if (currentValue >= 1) {
                     currentValue = 1;
-                    buffer->operator()(i) = currentValue;
+                    values(i) = currentValue;
                     state = State::DECAY;
                     stateStart = currentValue;
-                    if (i < startSample + numSamples) processBlock(buffer, modulationData, i+1, startSample + numSamples - (i+1));
+                    if (i < startSample + numSamples) processBlock(modulationData, i+1, startSample + numSamples - (i+1));
                     break;
                 }
             }
             break;
 
         case DECAY:
-            if (!stateValuesSet[State::SUSTAIN]) {
-                stateValues[State::SUSTAIN] = stateParameters[State::SUSTAIN]->getModulated(modulationData);
-                stateValuesSet[State::SUSTAIN] = true;
-            }
-
             for (int i = startSample; i < startSample + numSamples; i++) {
-                currentValue += (stateValues[State::SUSTAIN](i)-stateStart) / (sampleRate * stateValues[State::DECAY](i));
-                buffer->operator()(i) = currentValue;
+                currentValue += (stateValues[State::SUSTAIN](i - startSample)-stateStart) / (sampleRate * stateValues[State::DECAY](i - startSample));
+                values(i) = currentValue;
 
-                if (currentValue <= stateValues[State::SUSTAIN](i)) {
-                    currentValue = stateValues[State::SUSTAIN](i);
+                if (currentValue <= stateValues[State::SUSTAIN](i - startSample)) {
+                    currentValue = stateValues[State::SUSTAIN](i - startSample);
                     state = State::SUSTAIN;
                     stateStart = currentValue;
-                    if (i < startSample + numSamples) processBlock(buffer, modulationData, i+1, startSample + numSamples - (i+1));
+                    if (i < startSample + numSamples) processBlock(modulationData, i+1, startSample + numSamples - (i+1));
                     break;
                 }
             }
@@ -66,20 +62,20 @@ void ADSR::processBlock(Eigen::ArrayX<Decimal> *buffer, const ModulationData &mo
 
         case SUSTAIN:
             for (int i = startSample; i < startSample + numSamples; i++) {
-                currentValue = stateValues[State::SUSTAIN](i);
-                buffer->operator()(i) = currentValue;
+                currentValue = stateValues[State::SUSTAIN](i - startSample);
+                values(i) = currentValue;
             }
             break;
 
         case RELEASE:
             for (int i = startSample; i < startSample + numSamples; i++) {
-                currentValue -= stateStart / (sampleRate * stateValues[State::RELEASE](i));
-                buffer->operator()(i) = currentValue;
+                currentValue -= stateStart / (sampleRate * stateValues[State::RELEASE](i - startSample));
+                values(i) = currentValue;
 
                 if (currentValue <= 0) {
                     reset();
-                    buffer->operator()(i) = currentValue;
-                    if (i < startSample + numSamples) processBlock(buffer, modulationData, i+1, startSample + numSamples - (i+1));
+                    values(i) = currentValue;
+                    if (i < startSample + numSamples) processBlock(modulationData, i+1, startSample + numSamples - (i+1));
                     break;
                 }
             }
@@ -87,7 +83,7 @@ void ADSR::processBlock(Eigen::ArrayX<Decimal> *buffer, const ModulationData &mo
 
         case OFF:
             currentValue = 0;
-            buffer->operator()(Eigen::seqN(startSample, numSamples)).setZero();
+            values(Eigen::seqN(startSample, numSamples)).setZero();
             break;
     }
 }

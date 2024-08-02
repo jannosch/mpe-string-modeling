@@ -31,11 +31,12 @@ juce_add_plugin(${PROJECT_NAME}
 target_sources(${PROJECT_NAME}
         PRIVATE
         src/AudioProcessing/MPEAudioProcessor.cpp
-        src/Parameter/ModulatedParameterFloat.cpp
-        src/Parameter/Modulation.cpp
-        src/Parameter/ModulationData.cpp
+        src/Parameter/Modulation/ModulatedParameterFloat.cpp
+        src/Parameter/Modulation/Modulation.cpp
+        src/Parameter/Modulation/ModulationData.cpp
+        src/Parameter/Modulation/SmoothedModulationSourceValue.cpp
         src/Parameter/Parameters.cpp
-        src/Synthesizer/ADSR.cpp
+        src/Parameter/Modulation/ADSR.cpp
         src/Synthesizer/Synthesizer.cpp
         src/Synthesizer/Voice.cpp
         src/PluginProcessor.cpp
